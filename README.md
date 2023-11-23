@@ -10,8 +10,8 @@ In this work, we introduce DINOv, a Visual In-Context Prompting framework for re
 
 # Model framework
 ![framework](https://github.com/UX-Decoder/DINOv/assets/34880758/8c756028-a7bd-42dc-8aa7-e6773fd60711)
+![query_formulation](https://github.com/UX-Decoder/DINOv/assets/34880758/5ca36a9e-06ff-452c-b102-c05bebd5b5cf)
 
-![Uploading query_formulation.png…]()
 
 
 
