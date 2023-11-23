@@ -1,13 +1,18 @@
 # Visual In-Context Prompting
 In this work, we introduce DINOv, a Visual In-Context Prompting framework for referring and generic segmentation tasks.
-![teaser](https://github.com/UX-Decoder/DINOv/assets/34880758/978c2ddb-85d9-4408-8251-22be3ba053ad)
+![teaser](https://github.com/UX-Decoder/DINOv/assets/34880758/f686dd20-a5aa-40fa-ad57-c4c69575853b)
+
 # Openset segmentation
-![generic_seg_vis](https://github.com/UX-Decoder/DINOv/assets/34880758/6b155331-1557-419d-934a-dd7fc343f9fa)
+![generic_seg_vis](https://github.com/UX-Decoder/DINOv/assets/34880758/bfbe4d90-5be9-4fa5-a4e7-83f5c25f7f23)
+
 # Panoptic segmentation
-![panoptic_vis](https://github.com/UX-Decoder/DINOv/assets/34880758/3abb6dc8-6602-4218-bceb-1dee69a7876a)
+![panoptic_vis](https://github.com/UX-Decoder/DINOv/assets/34880758/c958f7b7-98c6-49cc-9c51-73bc6ad01808)
+
 # Model framework
-![framework](https://github.com/UX-Decoder/DINOv/assets/34880758/ea07ac98-45cd-430f-bfa3-a091e01e1632)
-![query_formulation](https://github.com/UX-Decoder/DINOv/assets/34880758/9ace4266-fb18-401e-859b-726c6add62d4)
+![framework](https://github.com/UX-Decoder/DINOv/assets/34880758/8c756028-a7bd-42dc-8aa7-e6773fd60711)
+
+![Uploading query_formulation.png…]()
+
 
 
 
