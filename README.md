@@ -1,5 +1,5 @@
 # Visual In-Context Prompting
-In this work, we introduce DINOv, a Visual In-Context Prompting framework for referring and generic segmentation tasks.
+In this work, we introduce [DINOv](https://arxiv.org/pdf/2311.13601.pdf), a Visual In-Context Prompting framework for referring and generic segmentation tasks.
 ![teaser](https://github.com/UX-Decoder/DINOv/assets/34880758/f686dd20-a5aa-40fa-ad57-c4c69575853b)
 
 # Openset segmentation
