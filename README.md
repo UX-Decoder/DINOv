@@ -1,7 +1,7 @@
 # Visual In-Context Prompting
 In this work, we introduce [DINOv](https://arxiv.org/pdf/2311.13601.pdf), a Visual In-Context Prompting framework for referring and generic segmentation tasks.
 
-For visualization and demos, we recommend using [T-Rex demo link](https://deepdataspace.com/playground/ivp), which is another visual prompting tool in our team with similar properties as ours.
+For visualization and demos, we recommend using [T-Rex demo link](https://deepdataspace.com/playground/ivp), which is another visual prompting tool in our team with similar properties as DINOv.
 
 ![teaser](https://github.com/UX-Decoder/DINOv/assets/34880758/f686dd20-a5aa-40fa-ad57-c4c69575853b)
 
