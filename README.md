@@ -99,9 +99,9 @@ For SwinL backbone
 ```shell
 python train_net.py --resume --num-gpus 8 --config-file configs/dinov_sam_coco_swinl_train.yaml SAM.TRAIN.BATCH_SIZE_TOTAL=8 COCO.TRAIN.BATCH_SIZE_TOTAL=8
 ```
-* Please use multi-node training, i.e, 64 gpu for batchsize 64, where each gpu handle one sam image and one coco image.
+* Please use multi-node training, i.e, 64 gpu for batchsize 64, where each gpu handle one SA-1B image and one coco image.
 * By default, we do not use COCO data for referring segmentation training. You can set `MODEL.DECODER.COCO_TRACK=True` to enable this task, which can improve the referring segmentation performance on DAVIS. 
-* We did not implement multi-image training for this task, which mean you can only put **one image on a gpu** for this task.
+* We did not implement multi-image training for this task, which mean you can only put **one image on a gpu** for each datatype (i.e., one SA-1b and one COCO image).
  
 # Model framework
 ![framework](https://github.com/UX-Decoder/DINOv/assets/34880758/8c756028-a7bd-42dc-8aa7-e6773fd60711)
