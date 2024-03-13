@@ -11,10 +11,6 @@ For visualization and demos, we recommend using [T-Rex demo link](https://deepda
 # Panoptic segmentation
 ![panoptic_vis](https://github.com/UX-Decoder/DINOv/assets/34880758/c958f7b7-98c6-49cc-9c51-73bc6ad01808)
 
-# Model framework
-![framework](https://github.com/UX-Decoder/DINOv/assets/34880758/8c756028-a7bd-42dc-8aa7-e6773fd60711)
-![query_formulation](https://github.com/UX-Decoder/DINOv/assets/34880758/5ca36a9e-06ff-452c-b102-c05bebd5b5cf)
-
 👉: **Related projects:**
 
 * [Semantic-SAM](https://github.com/UX-Decoder/Semantic-SAM): We base on the mutli-granularity interactive segmentation to extract proposals.
@@ -103,6 +99,18 @@ python train_net.py --resume --num-gpus 8 --config-file configs/dinov_sam_coco_s
 ```
 * Please use multi-node training if your gpu cannot handle batch 64 in one node.
 * By default, we do not use COCO data for referring segmentation training. You can set `MODEL.DECODER.COCO_TRACK=True` to enable this task, which can improve the referring segmentation performance on DAVIS. However, we did not implement multi-image training for this task, which mean you can only put **one image on a gpu** for this task.
+ 
+# Model framework
+![framework](https://github.com/UX-Decoder/DINOv/assets/34880758/8c756028-a7bd-42dc-8aa7-e6773fd60711)
+![query_formulation](https://github.com/UX-Decoder/DINOv/assets/34880758/5ca36a9e-06ff-452c-b102-c05bebd5b5cf)
+
+# Results
+## Open-set detection and segmentation
+<img width="826" alt="image" src="https://github.com/UX-Decoder/DINOv/assets/34880758/5d464654-bdb6-4c18-addb-9eb45d3968db">
+
+## Video object segmentation
+<img width="828" alt="image" src="https://github.com/UX-Decoder/DINOv/assets/34880758/9b1d5a06-af26-40b0-a9ac-72ab900e7382">
+
 ## :black_nib: Citation
 
 If you find our work helpful for your research, please consider citing the following BibTeX entry.   
