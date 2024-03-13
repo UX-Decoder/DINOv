@@ -1051,7 +1051,6 @@ class DINOv(nn.Module):
         if empty_flag:
             for i, target in enumerate(new_targets):
                 target['fake'] = True
-        print("cross_gpu, new_targets ", cross_gpu, len(new_targets))
         if not empty_flag and not cross_gpu:
             # handle batch in 1 gpu only, do not need cross gpu sync
             # if cross_gpu=True, sync will be performed in the decoder

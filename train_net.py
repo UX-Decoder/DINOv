@@ -423,7 +423,8 @@ class Trainer(DefaultTrainer):
         dataset_names = cfg['DATASETS']['TEST']
         weight_path = cfg['MODEL']['WEIGHTS']
         ckpt = weight_path.split('/')
-        output_dir_ = cfg['OUTPUT_DIR']+'_'+ckpt[-1]
+        # output_dir_ = cfg['OUTPUT_DIR']+'_'+ckpt[-1]
+        output_dir_ = cfg['OUTPUT_DIR']
         if comm.is_main_process() and not os.path.exists(output_dir_):
             os.mkdir(output_dir_)
         model = model.eval().cuda()
@@ -494,9 +495,8 @@ class Trainer(DefaultTrainer):
                 dir_name = dataset_name.split('_')[1]
             else:
                 dir_name = dataset_name.replace('train', 'val')
-            output_dir = output_dir_
-            if 'coco' not in output_dir:
-                output_dir = os.path.join(output_dir_, dir_name)
+            # output_dir = output_dir_
+            output_dir = os.path.join(output_dir_, dir_name)
             model_without_ddp.model.sem_seg_head.predictor.out_dir = output_dir
             # build evaluator
             evaluator = build_evaluator(cfg, dataset_name, cfg['OUTPUT_DIR'])

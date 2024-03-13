@@ -67,13 +67,15 @@ We do detection evaluation on COCO val2017.
 Process visual prompt embeddings for inference. We calculate the all the instance prompt embeddings of the validate set (you can also use the training set, but the processing time is much longer) and store them. Then we infrence by randomly selecting some visual prompts as in-context examples.
 * Infenrence script to get and store visual prompts
 ```shell
-python train_net.py --eval_only --resume --eval_get_content_features --num-gpus 8 --config-file /path/to/configs COCO.TEST.BATCH_SIZE_TOTAL=8 OUTPUT_DIR=$outdir MODEL.WEIGHTS=/path/to/weights
+python train_net.py --eval_only --resume --eval_get_content_features --num-gpus 8 --config-file /path/to/configs COCO.TEST.BATCH_SIZE_TOTAL=8 MODEL.WEIGHTS=/path/to/weights OUTPUT_DIR=/path/to/outputs
 ```
 * Inference script for open-set detection on COCO with visual prompts
 ```shell
-python train_net.py --eval_only --resume --eval_visual_openset --num-gpus 8 --config-file /path/to/configs COCO.TEST.BATCH_SIZE_TOTAL=8 OUTPUT_DIR=$outdir MODEL.WEIGHTS=/path/to/weights MODEL.DECODER.INFERENCE_EXAMPLE=16
+python train_net.py --eval_only --resume --eval_visual_openset --num-gpus 8 --config-file /path/to/configs COCO.TEST.BATCH_SIZE_TOTAL=8 MODEL.WEIGHTS=/path/to/weights MODEL.DECODER.INFERENCE_EXAMPLE=16 OUTPUT_DIR=/path/to/outputs
 ```
-configs to use are `configs/dinov_sam_coco_train.yaml` for swinT and `configs/dinov_sam_coco_swinl_train.yaml` for swinL.
+* **configs** to use are `configs/dinov_sam_coco_train.yaml` for swinT and `configs/dinov_sam_coco_swinl_train.yaml` for swinL.
+* `OUTPUT_DIR` is the dir to store the visual prompt embeddings
+* `INFERENCE_EXAMPLE` number of in-context examples to represent a category. Default set to 16.
 ### :star: Training 
 We currently release the code of training on SA-1B and COCO. It can also support Objects365 and other datasets with minimal modifications. 
 `$n` is the number of gpus you use
@@ -91,14 +93,15 @@ We recommend using total batchsize `64` for training, which provides enough post
 
 For SwinT backbone
 ```shell
-python train_net.py --resume --num-gpus 8 --config-file configs/dinov_sam_coco_train.yaml SAM.TRAIN.BATCH_SIZE_TOTAL=8 COCO.TRAIN.BATCH_SIZE_TOTAL=64
+python train_net.py --resume --num-gpus 8 --config-file configs/dinov_sam_coco_train.yaml SAM.TRAIN.BATCH_SIZE_TOTAL=8 COCO.TRAIN.BATCH_SIZE_TOTAL=8
 ```
 For SwinL backbone
 ```shell
-python train_net.py --resume --num-gpus 8 --config-file configs/dinov_sam_coco_swinl_train.yaml SAM.TRAIN.BATCH_SIZE_TOTAL=8 COCO.TRAIN.BATCH_SIZE_TOTAL=64
+python train_net.py --resume --num-gpus 8 --config-file configs/dinov_sam_coco_swinl_train.yaml SAM.TRAIN.BATCH_SIZE_TOTAL=8 COCO.TRAIN.BATCH_SIZE_TOTAL=8
 ```
-* Please use multi-node training if your gpu cannot handle batch 64 in one node.
-* By default, we do not use COCO data for referring segmentation training. You can set `MODEL.DECODER.COCO_TRACK=True` to enable this task, which can improve the referring segmentation performance on DAVIS. However, we did not implement multi-image training for this task, which mean you can only put **one image on a gpu** for this task.
+* Please use multi-node training, i.e, 64 gpu for batchsize 64, where each gpu handle one sam image and one coco image.
+* By default, we do not use COCO data for referring segmentation training. You can set `MODEL.DECODER.COCO_TRACK=True` to enable this task, which can improve the referring segmentation performance on DAVIS. 
+* We did not implement multi-image training for this task, which mean you can only put **one image on a gpu** for this task.
  
 # Model framework
 ![framework](https://github.com/UX-Decoder/DINOv/assets/34880758/8c756028-a7bd-42dc-8aa7-e6773fd60711)
