@@ -1,0 +1,1 @@
+from .openset_task import task_openset

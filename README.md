@@ -1,9 +1,25 @@
 # Visual In-Context Prompting
+:grapes: \[[Read our arXiv Paper](https://arxiv.org/pdf/2311.13601.pdf)\] &nbsp; :apple: \[[Try our Demo](http://semantic-sam.xyzou.net:6099/)\] 
+
 In this work, we introduce [DINOv](https://arxiv.org/pdf/2311.13601.pdf), a Visual In-Context Prompting framework for referring and generic segmentation tasks.
 
-For visualization and demos, we recommend using [T-Rex demo link](https://deepdataspace.com/playground/ivp), which is another visual prompting tool in our team with similar properties as DINOv.
+For visualization and demos, we also recommend trying [T-Rex demo link](https://deepdataspace.com/playground/ivp), which is another visual prompting tool in our team with similar properties as DINOv.
 
 ![teaser](https://github.com/UX-Decoder/DINOv/assets/34880758/f686dd20-a5aa-40fa-ad57-c4c69575853b)
+
+### :hammer_and_wrench: Installation
+```shell
+pip3 install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu113
+python -m pip install 'git+https://github.com/MaureenZOU/detectron2-xyz.git'
+pip install git+https://github.com/cocodataset/panopticapi.git
+git clone https://github.com/UX-Decoder/DINOv
+cd DINOv
+python -m pip install -r requirements.txt
+```
+#### :point_right: Launch a demo for visual in-context prompting
+```shell
+python demo_openset.py --ckpt /path/to/swinL/ckpt
+```
 
 # Openset segmentation
 ![generic_seg_vis](https://github.com/UX-Decoder/DINOv/assets/34880758/bfbe4d90-5be9-4fa5-a4e7-83f5c25f7f23)
@@ -19,18 +35,12 @@ For visualization and demos, we recommend using [T-Rex demo link](https://deepda
 
 ## :unicorn: Getting Started
 
-### :hammer_and_wrench: Installation
-```shell
-pip3 install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu113
-python -m pip install 'git+https://github.com/MaureenZOU/detectron2-xyz.git'
-pip install git+https://github.com/cocodataset/panopticapi.git
-git clone https://github.com/UX-Decoder/DINOv
-cd DINOv
-python -m pip install -r requirements.txt
-```
-
 ### :mosque: Data preparation
 We jointly train on COCO and SA-1B data. Please refer to [prepare SA-1B data](https://github.com/UX-Decoder/Semantic-SAM/blob/main/DATASET.md) and [prepare coco data](https://github.com/IDEA-Research/MaskDINO/blob/main/README.md).
+
+For evaluation, you need to prepare 
+* [ADE20K](https://github.com/IDEA-Research/MaskDINO/blob/main/datasets/README.md) for open-set segmentation evaluation.
+* [DAVIS2017](https://davischallenge.org/davis2017/code.html) for refering segmentation (video object segmentation).
 
 ### :volcano: Model Zoo
 The currently released checkpoints are trained with SA-1B and COCO data. 
@@ -65,6 +75,7 @@ We do detection evaluation on COCO val2017.
 `$n` is the number of gpus you use
 
 Process visual prompt embeddings for inference. We calculate the all the instance prompt embeddings of the validate set (you can also use the training set, but the processing time is much longer) and store them. Then we infrence by randomly selecting some visual prompts as in-context examples.
+#### Evaluate Open-set detection and segmentation
 * Infenrence script to get and store visual prompts
 ```shell
 python train_net.py --eval_only --resume --eval_get_content_features --num-gpus 8 --config-file /path/to/configs COCO.TEST.BATCH_SIZE_TOTAL=8 MODEL.WEIGHTS=/path/to/weights OUTPUT_DIR=/path/to/outputs
@@ -74,8 +85,21 @@ python train_net.py --eval_only --resume --eval_get_content_features --num-gpus 
 python train_net.py --eval_only --resume --eval_visual_openset --num-gpus 8 --config-file /path/to/configs COCO.TEST.BATCH_SIZE_TOTAL=8 MODEL.WEIGHTS=/path/to/weights MODEL.DECODER.INFERENCE_EXAMPLE=16 OUTPUT_DIR=/path/to/outputs
 ```
 * **configs** to use are `configs/dinov_sam_coco_train.yaml` for swinT and `configs/dinov_sam_coco_swinl_train.yaml` for swinL.
+* For ADE20K data, use `configs/dinov_sam_ade_eval.yaml` and adjust the batchsize of ADE evaluation to the correct number.
 * `OUTPUT_DIR` is the dir to store the visual prompt embeddings
 * `INFERENCE_EXAMPLE` number of in-context examples to represent a category. Default set to 16.
+#### Evaluate Refering segmentation on VOS
+We evaluate under the `DAVIS 2017 Semi-supervised` setting, please refer to [davis2017-evaluation](https://github.com/davisvideochallenge/davis2017-evaluation) for more details.
+
+The first step is to compute and store the results of DAVIS2017. We implement a navie memory-aware approach with our in-context visual prompting.
+```shell
+python train_net.py --eval_track_prev --eval_only --resume --num-gpus 8 --config-file configs/dinov_sam_coco_train.yaml DAVIS.TEST.BATCH_SIZE_TOTAL=8 OUTPUT_DIR=$outdir MODEL.WEIGHTS=/path/to/weights MODEL.DECODER.NMS_THRESHOLD=0.9 MODEL.DECODER.MAX_MEMORY_SIZE=9 OUTPUT_DIR=/path/to/outputs
+```
+The second step is to evaluate the semi-supervised results.
+```shell
+python evaluation_method.py --task semi-supervised --results_path /path/to/results --davis_path /path/to/davis/data
+```
+* We use MAX_MEMORY_SIZE = 9 by default (1 current frame token and 8 previous memory tokens)
 ### :star: Training 
 We currently release the code of training on SA-1B and COCO. It can also support Objects365 and other datasets with minimal modifications. 
 `$n` is the number of gpus you use

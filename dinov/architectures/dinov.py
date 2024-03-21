@@ -191,7 +191,7 @@ class DINOv(nn.Module):
 
         # freeze some parameters
         to_freeze_dict = ['label_enc', 'pb_embedding']
-        if freeze_all:
+        if freeze_all:            
             for (name, param) in self.named_parameters():
                 param.requires_grad = False
             print("!!!!!!!!freeze_all!!!!!!!!, except ", to_freeze_dict)
@@ -1139,9 +1139,52 @@ class DINOv(nn.Module):
 
         return src_boxes, mask_pred_results, src_ious, pred_ious
 
+    def filter_data_openset(self, src_boxes, mask_pred_results, src_ious, pred_ious, pred_score_openset):
+        def keep_data(box, mask, iou, match_score, pred_score_openset, keep):
+            return box[keep], mask[keep], iou[keep], match_score[:, keep], pred_score_openset[:, keep]
+        # advanced filtering
+        # uncomment below for better filltering
+        
+        # print('filter iou score')
+        # keep = src_ious > 0.5
+        # src_boxes, mask_pred_results, src_ious, pred_ious, pred_score_openset = keep_data(src_boxes, mask_pred_results, src_ious, pred_ious,pred_score_openset,
+        #                                                               keep)
+        #
+        # stability_score = calculate_stability_score(
+        #     mask_pred_results, 0.0, self.stability_score_offset
+        # )
+        # keep = stability_score >= self.stability_score_thresh
+        #
+        # src_boxes, mask_pred_results, src_ious, pred_ious, pred_score_openset = keep_data(src_boxes, mask_pred_results, src_ious,pred_score_openset,
+        #                                                               pred_ious, keep)
+
+        # print('using nms')
+        # item_indice = nms(box_ops.box_cxcywh_to_xyxy(src_boxes), src_ious, self.nms_thersh)  # FIXME iou threshold
+        # mask_pred_results = mask_pred_results[item_indice]
+        # src_boxes = src_boxes[item_indice]
+        # src_ious = src_ious[item_indice]
+        # pred_ious = torch.index_select(pred_ious, -1, item_indice)
+        # pred_score_openset = torch.index_select(pred_score_openset, -1, item_indice)
+
+        # print("remove small objects")
+        # keep = (mask_pred_results > 0).flatten(-2, -1).sum(-1) > 50
+        # # keep = (mask_pred_results > 0).flatten(-2, -1).sum(-1) > 100
+        # src_boxes, mask_pred_results, src_ious, pred_ious, pred_score_openset = keep_data(src_boxes, mask_pred_results, src_ious,
+        #                                                               pred_ious, pred_score_openset, keep)
+        
+        scores_per_image_openset, label_openset = pred_score_openset.sigmoid().max(-1)
+        thresh = 0.12
+        keep = scores_per_image_openset>thresh
+        while sum(keep)<1:
+            thresh = thresh-0.04
+            keep = scores_per_image_openset > thresh
+        scores_per_image_openset, label_openset = scores_per_image_openset[keep], label_openset[keep]
+        mask_pred_results = mask_pred_results[keep]
+
+        return src_boxes, mask_pred_results, src_ious, pred_ious, scores_per_image_openset
+    
     def get_encoder_feature(self, batched_inputs):
         # get the image encoder features (multi-scale)
-        assert len(batched_inputs) == 1, "only support batch size equal to 1"
         images = self.prepare_image(batched_inputs)
         padded_h = images.tensor.shape[-2]  # divisable to 32
         padded_w = images.tensor.shape[-1]
@@ -1238,6 +1281,70 @@ class DINOv(nn.Module):
             )
         return pred_masks, pred_ious, ori_masks
 
+    def evaluate_demo_content_openset_multi_with_content_features(self, batched_inputs, mask_features, multi_scale_features,
+                                                                input_query_label_content,
+                                                                input_query_bbox_content, attn_mask_content,
+                                                                padded_h, padded_w,
+                                                                level=[0,1,2,3,4,5], return_src_ious=False):
+        assert len(batched_inputs) == 1, "only support batch size equal to 1"
+        prediction_switch = {'part': False, 'whole': False, 'seg': True, 'det': True}
+
+        def prepare_image(batched_inputs, key='image'):
+            images = [x['image'].to(self.device) for x in batched_inputs]
+            images = [(x - self.pixel_mean) / self.pixel_std for x in images]
+            images = ImageList.from_tensors(images, self.size_divisibility)
+            return images
+
+        images = prepare_image(batched_inputs)
+
+        # image_size_xyxy = torch.tensor([padded_w, padded_h, padded_w, padded_h]).cuda()
+        # auto_points = torch.tensor(self.build_point_grid(self.point_per_side)).cuda() * image_size_xyxy[:2]
+
+        # boxes_dn = box_ops.box_xyxy_to_cxcywh(
+        #     torch.cat([auto_points - 3, auto_points + 3], 1)) / image_size_xyxy
+        # boxes_dn = torch.tensor(boxes_dn, dtype=torch.float32)
+        # pb = torch.ones(boxes_dn.shape[0])  # FIXME: use 1 for pb
+        # targets_p = [{}]
+        # targets_p[0]['boxes_dn'] = boxes_dn
+        # targets_p[0]['pb'] = pb
+
+        # targets = targets_p
+        targets = None
+        outputs, mask_dict = self.sem_seg_head.predictor.forward_openset_image_with_extracted_content(multi_scale_features,
+                                                         mask_features, None, input_query_label_content, input_query_bbox_content, attn_mask_content, targets,
+                                                         extra=prediction_switch)
+
+        src_boxes = outputs["pred_boxes"][0]
+        mask_pred_results = outputs["pred_masks"][0]
+        pred_score_openset = outputs["pred_logits"][0]
+        # level = torch.tensor(level).cuda()
+        src_ious = pred_score_openset.flatten(0, 1)
+        pred_ious = pred_score_openset
+        src_boxes, mask_pred_results, src_ious, pred_ious, scores_per_image_openset = self.filter_data_openset(src_boxes, mask_pred_results, src_ious,
+                                                                             pred_ious, pred_score_openset)
+
+        # upsample masks
+        mask_pred_results = F.interpolate(
+            mask_pred_results[None],
+            size=(images.tensor.shape[-2], images.tensor.shape[-1]),
+            mode="bilinear",
+            align_corners=False,
+        )
+
+        pred_masks = mask_pred_results
+        image_size = images.image_sizes[0]
+
+        height = batched_inputs[0].get('height', image_size[0])
+        width = batched_inputs[0].get('width', image_size[1])
+        ori_masks = pred_masks[:, : image_size[0], : image_size[1]].expand(1, -1, -1, -1)[0]
+        # import ipdb; ipdb.set_trace()
+        if self.sem_seg_postprocess_before_inference:
+            pred_masks = retry_if_cuda_oom(sem_seg_postprocess)(
+                pred_masks, image_size, height, width
+            )
+        return pred_masks, pred_ious, ori_masks, scores_per_image_openset
+
+    
     def semantic_inference(self, mask_cls, mask_pred):
         # if use cross-entropy loss in training, evaluate with softmax
         if self.semantic_ce_loss:

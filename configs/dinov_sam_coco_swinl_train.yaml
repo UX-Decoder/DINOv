@@ -166,7 +166,6 @@ MODEL:
     NUM_CONTENT_TOKENS: 1
     MAX_NUM_INSTANCE: 50
     MAX_NUM_INSTANCE_CONTENT: 8
-    # CONTENT_INDEPENDENT: True
     USE_SHAPE_SAMPLER: True
     OPENSET_USE_SHAPE_SAMPLER: False
     INFERENCE_EXAMPLE: 4
@@ -176,7 +175,7 @@ MODEL:
     NMS_THRESHOLD: 0.7
     REFER_IMAGE: False
     point_per_side: 20
-    max_memory_size: 8
+    MAX_MEMORY_SIZE: 9
     softmax: False
     MANY2MANY: True
     VIS: False

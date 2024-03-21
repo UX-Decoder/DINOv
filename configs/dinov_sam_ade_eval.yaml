@@ -176,7 +176,7 @@ MODEL:
     NMS_THRESHOLD: 0.7
     REFER_IMAGE: False
     point_per_side: 20
-    max_memory_size: 8
+    MAX_MEMORY_SIZE: 9
     softmax: False
     MANY2MANY: True
     VIS: False

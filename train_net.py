@@ -309,7 +309,7 @@ class Trainer(DefaultTrainer):
         from PIL import Image
         from queue import Queue, LifoQueue, PriorityQueue
         cfg['DATASETS']['TEST'] = ['davis17_val']
-        maxsize = cfg['MODEL']['DECODER']['max_memory_size']
+        maxsize = cfg['MODEL']['DECODER']['MAX_MEMORY_SIZE']
         dataloaders = cls.build_test_loader(cfg, dataset_name=None)
         model = model.eval().cuda()
 
@@ -612,10 +612,7 @@ def main(args=None):
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
-        if args.original_load:
-            print("using original loading")
-            model = model.from_pretrained(cfg.MODEL.WEIGHTS)
-        elif args.eval_visual_openset:
+        if args.eval_visual_openset:
             res = Trainer.test_visual_openset(cfg, model, args.eval_visual_openset_combine)
         elif args.eval_track_prev:
             res = Trainer.test_tracking_prev(cfg, model)
@@ -630,13 +627,6 @@ def main(args=None):
         init_wandb(cfg, cfg['OUTPUT_DIR'], entity=args.wandb_usr_name, job_name=cfg['OUTPUT_DIR'])
 
     trainer = Trainer(cfg)
-    if len(args.lang_weight)>0:
-        import copy
-        weight = copy.deepcopy(trainer.cfg.MODEL.WEIGHTS)
-        trainer.cfg.MODEL.WEIGHTS = args.lang_weight
-        print("load original language language weight!!!!!!")
-        trainer.resume_or_load(resume=args.resume)
-        trainer.cfg.MODEL.WEIGHTS = weight
 
     print("load pretrained model weight!!!!!!")
     trainer.resume_or_load(resume=args.resume)
@@ -647,19 +637,9 @@ def main(args=None):
 if __name__ == "__main__":
     parser = default_argument_parser()
     parser.add_argument('--eval_only', action='store_true')
-    parser.add_argument('--eval_track', action='store_true')
     parser.add_argument('--eval_visual_openset', action='store_true')
-    parser.add_argument('--eval_visual_openset_combine', action='store_true')
     parser.add_argument('--eval_track_prev', action='store_true')
-    parser.add_argument('--eval_track_prev_davis16', action='store_true')
-    parser.add_argument('--eval_track_gt_frame', action='store_true')
-    parser.add_argument('--eval_track_prev_ytvos', action='store_true')
-    parser.add_argument('--eval_track_prev_ytvos_v2', action='store_true')
-    parser.add_argument('--eval_track_gt', action='store_true')
     parser.add_argument('--eval_get_content_features', action='store_true')
-    parser.add_argument('--original_load', action='store_true')
-    parser.add_argument('--EVAL_FLAG', type=int, default=1)
-    parser.add_argument('--lang_weight', type=str, default='')
     parser.add_argument('--WANDB', action='store_true')
     parser.add_argument('--wandb_usr_name', type=str, default='')
     parser.add_argument('--wandb_key', type=str, default='')

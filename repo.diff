@@ -1,0 +1,21 @@
+diff --git openseed/architectures/joint_oi_model.py openseed/architectures/joint_oi_model.py
+index 8086690..a0679fe 100644
+--- openseed/architectures/joint_oi_model.py
++++ openseed/architectures/joint_oi_model.py
+@@ -286,6 +286,7 @@ class GeneralizedMaskDINO(nn.Module):
+             "coco_on": dec_cfg.get('COCO', True),
+             "coco_mask_on": dec_cfg.get('COCO_MASK', True),
+             "o365_on": dec_cfg.get('O365', True),
++            "regenerate_point": dec_cfg.get('RE_POINT', False),
+         }
+ 
+     @property
+@@ -531,7 +532,7 @@ class GeneralizedMaskDINO(nn.Module):
+ 
+             # if not self.training:
+             #     box_start = int(num_mask/4*3)
+-            box_start = random.randint(0, self.max_num_instance - 1)  # box based interactive after this number; about 1/4
++            box_start = random.randint(1, self.max_num_instance - 1)  # box based interactive after this number; about 1/4
+             point_coords = targets_per_image.point_coords[index[:box_start]]
+             # FIXME randomly sample one point as the user input
+             if self.regenerate_point:
