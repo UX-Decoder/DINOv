@@ -953,6 +953,7 @@ class DINOv(nn.Module):
         id_start = 0
         id_start_list = [0]
         empty_flag = False
+        batch_examples_by_category = {}
         for targets_per_image in targets:
             gt_boxes = targets_per_image.gt_boxes if torch.is_tensor(
                 targets_per_image.gt_boxes) else targets_per_image.gt_boxes.tensor
@@ -1039,7 +1040,7 @@ class DINOv(nn.Module):
             unique_category_examples_by_category = getIdx(gt_classes, id_start)
             id_start += num_mask
             id_start_list.append(id_start)
-            batch_examples_by_category = {}
+            
             for k, v in unique_category_examples_by_category.items():
                 if k in batch_examples_by_category.keys():
                     batch_examples_by_category[k] = torch.cat(
