@@ -476,7 +476,7 @@ class Trainer(DefaultTrainer):
                     print(idx)
 
     @classmethod
-    def test_visual_openset(cls, cfg, model, eval_visual_openset_combine, evaluators=None):
+    def test_visual_openset(cls, cfg, model, evaluators=None):
         # build dataloade
         dataloaders = cls.build_test_loader(cfg, dataset_name=None)
         dataset_names = cfg['DATASETS']['TEST']
@@ -613,7 +613,7 @@ def main(args=None):
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
         if args.eval_visual_openset:
-            res = Trainer.test_visual_openset(cfg, model, args.eval_visual_openset_combine)
+            res = Trainer.test_visual_openset(cfg, model)
         elif args.eval_track_prev:
             res = Trainer.test_tracking_prev(cfg, model)
         elif args.eval_get_content_features:
